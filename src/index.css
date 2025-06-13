@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 30% 15%; /* Dark Blue */
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 15%; /* Dark Blue */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 15%; /* Dark Blue */
+
+    --primary: 120 70% 50%; /* Green */
+    --primary-foreground: 0 0% 100%; /* White */
+
+    --secondary: 220 60% 20%; /* Main Blue */
+    --secondary-foreground: 0 0% 100%; /* White */
+
+    --muted: 220 10% 90%; /* Light Blue */
+    --muted-foreground: 220 30% 15%; /* Dark Blue */
+
+    --accent: 120 70% 50%; /* Green */
+    --accent-foreground: 0 0% 100%; /* White */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 10% 90%; /* Light Blue */
+    --input: 220 10% 90%; /* Light Blue */
+    --ring: 220 60% 20%; /* Main Blue */
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 220 60% 20%; /* Main Blue */
+    --sidebar-foreground: 0 0% 100%; /* White */
+    --sidebar-primary: 120 70% 50%; /* Green */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 220 10% 90%; /* Light Blue */
+    --sidebar-accent-foreground: 220 30% 15%; /* Dark Blue */
+    --sidebar-border: 220 30% 15%; /* Dark Blue */
+    --sidebar-ring: 120 70% 50%; /* Green */
+  }
+
+  .dark {
+    --background: 220 60% 20%; /* Main Blue */
+    --foreground: 0 0% 100%; /* White */
+
+    --card: 220 60% 20%; /* Main Blue */
+    --card-foreground: 0 0% 100%; /* White */
+
+    --popover: 220 60% 20%; /* Main Blue */
+    --popover-foreground: 0 0% 100%; /* White */
+
+    --primary: 120 70% 50%; /* Green */
+    --primary-foreground: 0 0% 100%; /* White */
+
+    --secondary: 220 10% 90%; /* Light Blue */
+    --secondary-foreground: 220 30% 15%; /* Dark Blue */
+
+    --muted: 220 30% 15%; /* Darker blue */
+    --muted-foreground: 220 10% 90%; /* Light blue */
+
+    --accent: 120 70% 50%; /* Green */
+    --accent-foreground: 0 0% 100%; /* White */
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 10% 90%; /* Light Blue */
+    --input: 220 10% 90%; /* Light Blue */
+    --ring: 120 70% 50%; /* Green */
+
+    --sidebar-background: 220 70% 15%; /* Darker Blue */
+    --sidebar-foreground: 0 0% 100%; /* White */
+    --sidebar-primary: 120 70% 50%; /* Green */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 220 30% 15%; /* Darker Blue */
+    --sidebar-accent-foreground: 0 0% 100%; /* White */
+    --sidebar-border: 220 30% 15%; /* Darker Blue */
+    --sidebar-ring: 120 70% 50%; /* Green */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
