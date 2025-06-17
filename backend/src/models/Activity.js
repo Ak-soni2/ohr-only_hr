@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const activitySchema = new mongoose.Schema({
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true
+    },
     title: {
         type: String,
         required: true,
@@ -12,7 +16,7 @@ const activitySchema = new mongoose.Schema({
         enum: ['lecture', 'csr'],
         default: 'lecture'
     },
-    bio: {
+    description: {
         type: String,
         required: true,
         maxLength: 300 // approximately 50 words
@@ -22,21 +26,17 @@ const activitySchema = new mongoose.Schema({
         required: true
     },
     date: {
-        type: Date,
+        type: String,
         required: true
     },
-    // Fields specific to guest lectures
     speaker: {
-        name: {
-            type: String,
-            required: function() { return this.type === 'lecture'; }
-        },
-        position: {
-            type: String,
-            required: function() { return this.type === 'lecture'; }
-        }
+        type: String,
+        required: function() { return this.type === 'lecture'; }
     },
-    // Fields specific to CSR activities
+    position: {
+        type: String,
+        required: function() { return this.type === 'lecture'; }
+    },
     impact: {
         type: String,
         required: function() { return this.type === 'csr'; }
@@ -45,6 +45,4 @@ const activitySchema = new mongoose.Schema({
     timestamps: true
 });
 
-const Activity = mongoose.model('Activity', activitySchema);
-
-export default Activity;
+export default mongoose.model('Activity', activitySchema);

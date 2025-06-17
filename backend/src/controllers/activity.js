@@ -8,10 +8,14 @@ export const getAllActivities = async (req, res) => {
         const { type } = req.query;
         const query = type ? { type } : {};
         
+        console.log('Fetching activities with query:', query);
         const activities = await Activity.find(query).sort({ date: -1 });
+        console.log('Found activities:', activities.length);
         
+        res.setHeader('Content-Type', 'application/json');
         res.status(200).json({
             success: true,
+            count: activities.length,
             data: activities
         });
     } catch (error) {

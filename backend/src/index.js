@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import teamRoutes from './routes/team.js';
+import activityRoutes from './routes/activity.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { checkServerHealth } from './middleware/healthCheck.js';
 import Admin from './models/Admin.js';
@@ -46,10 +47,19 @@ app.use('/health', checkServerHealth);
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/activities', activityRoutes);
 
 // Test route
 app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working!' });
+});
+
+// Handle 404s
+app.use((req, res, next) => {
+    res.status(404).json({
+        success: false,
+        message: `Cannot ${req.method} ${req.url}`
+    });
 });
 
 // Error handling

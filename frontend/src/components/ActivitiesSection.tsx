@@ -10,7 +10,10 @@ interface Activity {
   date: string;
   image: string;
   speaker?: string;
+  position?: string;
   impact?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const ActivitiesSection: React.FC = () => {
@@ -20,17 +23,44 @@ export const ActivitiesSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchActivities = async () => {
+  useEffect(() => {    const fetchActivities = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities`);
+        console.log('Fetching activities...');
+        
+        const response = await fetch('http://localhost:8080/api/activities', {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Response status:', response.status);
+        const contentType = response.headers.get("content-type");
+        console.log('Content-Type:', contentType);
+
         if (!response.ok) {
-          throw new Error('Failed to fetch activities');
+          throw new Error(`Failed to fetch activities: ${response.status}`);
         }
-        const data = await response.json();
-        setActivities(data);
+
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Received non-JSON response from server");
+        }
+
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        const result = JSON.parse(responseText);
+        console.log('Parsed response:', result);
+
+        if (!result.success) {
+          throw new Error(result.message || 'Failed to fetch activities');
+        }
+
+        const activities = Array.isArray(result.data) ? result.data : [];
+        console.log('Setting activities:', activities);
+        setActivities(activities);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching activities');
       } finally {
@@ -226,9 +256,8 @@ export const ActivitiesSection: React.FC = () => {
             <p className="text-muted-foreground">Expert Speakers</p>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-purple-600 mb-2">
-              {activities.filter(a => a.type === 'csr').reduce((sum, activity) => {
-                const impactNumber = parseInt(activity.impact?.replace(/\D/g, '') || '0');
+            <div className="text-3xl md:text-4xl font-bold text-purple-600 mb-2">              {activities.filter(a => a.type === 'csr').reduce((sum, activity) => {
+                const impactNumber = parseInt(activity.impact || '0');
                 return sum + impactNumber;
               }, 0)}+
             </div>

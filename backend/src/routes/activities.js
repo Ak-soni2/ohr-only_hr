@@ -6,10 +6,19 @@ const auth = require('../middleware/auth');
 // Get all activities (public)
 router.get('/', async (req, res) => {
   try {
-    const activities = await Activity.find().sort({ date: -1 });
-    res.json(activities);
+    const { type } = req.query;
+    const query = type ? { type } : {};
+    const activities = await Activity.find(query).sort({ date: -1 });
+    res.json({
+      success: true,
+      data: activities
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Error in GET /activities:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
@@ -18,9 +27,17 @@ router.post('/', auth, async (req, res) => {
   try {
     const activity = new Activity(req.body);
     const newActivity = await activity.save();
-    res.status(201).json(newActivity);
+    res.status(201).json({
+      success: true,
+      data: newActivity,
+      message: 'Activity created successfully'
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error('Error in POST /activities:', err);
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
@@ -30,14 +47,25 @@ router.put('/:id', auth, async (req, res) => {
     const activity = await Activity.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (!activity) {
-      return res.status(404).json({ message: 'Activity not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Activity not found'
+      });
     }
-    res.json(activity);
+    res.json({
+      success: true,
+      data: activity,
+      message: 'Activity updated successfully'
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error('Error in PUT /activities/:id:', err);
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
@@ -46,11 +74,46 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     const activity = await Activity.findByIdAndDelete(req.params.id);
     if (!activity) {
-      return res.status(404).json({ message: 'Activity not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Activity not found'
+      });
     }
-    res.json({ message: 'Activity deleted successfully' });
+    res.json({
+      success: true,
+      message: 'Activity deleted successfully'
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Error in DELETE /activities/:id:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+});
+
+// Get activities by type
+router.get('/type/:type', async (req, res) => {
+  try {
+    const { type } = req.params;
+    if (!['lecture', 'csr'].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid activity type'
+      });
+    }
+
+    const activities = await Activity.find({ type }).sort({ date: -1 });
+    res.json({
+      success: true,
+      data: activities
+    });
+  } catch (err) {
+    console.error('Error in GET /activities/type/:type:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 

@@ -46,7 +46,8 @@ export function ActivityManagement() {
   const fetchActivities = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('adminToken');      const response = await fetch('http://localhost:8080/api/activities', {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('http://localhost:8080/api/activities', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -62,9 +63,10 @@ export function ActivityManagement() {
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Received non-JSON response from server");
+      }      const { success, data, message } = await response.json();
+      if (!success) {
+        throw new Error(message || 'Failed to fetch activities');
       }
-
-      const data = await response.json();
       setActivities(data);
     } catch (error) {
       console.error('Fetch error:', error);
@@ -103,7 +105,8 @@ export function ActivityManagement() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('adminToken');      const url = `http://localhost:8080/api/activities${selectedActivity ? `/${selectedActivity._id}` : ''}`;
+      const token = localStorage.getItem('adminToken');
+      const url = `http://localhost:8080/api/activities${selectedActivity ? `/${selectedActivity._id}` : ''}`;
       const method = selectedActivity ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -180,11 +183,14 @@ export function ActivityManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:8081/api/activities/${id}`, {
+      const response = await fetch(`http://localhost:8080/api/activities/${id}`, {
         method: 'DELETE',
         headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -215,92 +221,118 @@ export function ActivityManagement() {
         <CardHeader>
           <CardTitle>{selectedActivity ? 'Edit Activity' : 'Add New Activity'}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                name="title"
-                placeholder="Activity Title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-              />
-              <Select
-                value={formData.type}
-                onValueChange={handleTypeChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lecture">Guest Lecture</SelectItem>
-                  <SelectItem value="csr">CSR Activity</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                name="image"
-                placeholder="Image URL"
-                value={formData.image}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                name="date"
-                type="date"
-                value={formData.date}
-                onChange={handleInputChange}
-                required
-              />
-              {formData.type === 'lecture' && (
-                <>
-                  <Input
-                    name="speaker"
-                    placeholder="Speaker Name"
-                    value={formData.speaker}
-                    onChange={handleInputChange}
-                    required
-                  />
-                  <Input
-                    name="position"
-                    placeholder="Speaker Position"
-                    value={formData.position}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </>
-              )}
-              {formData.type === 'csr' && (
+        <CardContent>          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  name="impact"
-                  placeholder="Impact (e.g., '500+ students reached')"
-                  value={formData.impact}
+                  name="title"
+                  placeholder="Activity Title"
+                  value={formData.title}
                   onChange={handleInputChange}
                   required
                 />
-              )}
-            </div>
-            <Textarea
-              name="description"
-              placeholder="Activity Description (max 50 words)"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="min-h-[100px]"
-              required
-              maxLength={300}
-            />
-            <div className="flex justify-end space-x-2">
-              {selectedActivity && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setSelectedActivity(null)}
-                >
-                  Cancel
+
+                <Select value={formData.type} onValueChange={handleTypeChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Activity Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lecture">Guest Lecture</SelectItem>
+                    <SelectItem value="csr">CSR Activity</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Textarea
+                name="description"
+                placeholder="Activity Description (max 50 words)"
+                value={formData.description}
+                onChange={handleInputChange}
+                className="min-h-[100px]"
+                required
+                maxLength={300}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  name="image"
+                  placeholder="Image URL"
+                  value={formData.image}
+                  onChange={handleInputChange}
+                  required
+                  type="url"
+                />
+
+                <Input
+                  name="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  required
+                />
+
+                {formData.type === 'lecture' ? (
+                  <>
+                    <Input
+                      name="speaker"
+                      placeholder="Speaker Name"
+                      value={formData.speaker}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Input
+                      name="position"
+                      placeholder="Speaker Position"
+                      value={formData.position}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </>
+                ) : (
+                  <Input
+                    name="impact"
+                    placeholder="Number of people impacted"
+                    value={formData.impact}
+                    onChange={handleInputChange}
+                    required
+                    type="number"
+                    min="0"
+                    step="1"
+                  />
+                )}
+              </div>              <div className="flex justify-end space-x-2">
+                {selectedActivity && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedActivity(null);
+                      setFormData({
+                        title: '',
+                        type: 'lecture',
+                        description: '',
+                        image: '',
+                        date: '',
+                        speaker: '',
+                        position: '',
+                        impact: ''
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {selectedActivity ? 'Updating...' : 'Creating...'}
+                    </>
+                  ) : (
+                    <>{selectedActivity ? 'Update Activity' : 'Create Activity'}</>
+                  )}
                 </Button>
-              )}
-              <Button type="submit" disabled={loading}>
-                {loading ? <Loader2 className="animate-spin h-5 w-5" /> : selectedActivity ? 'Update' : 'Add'} Activity
-              </Button>
+              </div>
             </div>
           </form>
         </CardContent>
@@ -330,9 +362,8 @@ export function ActivityManagement() {
                       <p className="text-sm font-medium">Speaker: {activity.speaker}</p>
                       <p className="text-sm text-muted-foreground">{activity.position}</p>
                     </div>
-                  )}
-                  {activity.type === 'csr' && activity.impact && (
-                    <p className="text-sm font-medium mt-2">Impact: {activity.impact}</p>
+                  )}                  {activity.type === 'csr' && activity.impact && (
+                    <p className="text-sm font-medium mt-2">Impact: {activity.impact} people</p>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">
                     Date: {new Date(activity.date).toLocaleDateString()}
