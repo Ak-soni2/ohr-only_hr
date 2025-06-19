@@ -1,5 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
+import upload from '../middleware/uploadMiddleware.js';
 import {
     getAllTeamMembers,
     getTeamMember,
@@ -18,8 +19,8 @@ router.get('/:id', getTeamMember);
 
 // Protected routes (admin only)
 router.use(protect); // Middleware to check if user is authenticated
-router.post('/', createTeamMember);
-router.put('/:id', updateTeamMember);
+router.post('/', upload.single('image'), createTeamMember);
+router.put('/:id', upload.single('image'), updateTeamMember);
 router.delete('/:id', deleteTeamMember);
 
 export default router;

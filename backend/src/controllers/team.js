@@ -53,7 +53,7 @@ export const getTeamMember = async (req, res) => {
 // @access  Private/Admin
 export const createTeamMember = async (req, res) => {
     try {
-        const { name, position, type, linkedIn, email, bio, image } = req.body;
+        const { name, position, type, linkedIn, bio } = req.body;
 
         // Validate required fields
         if (!name || !position || !type) {
@@ -68,9 +68,8 @@ export const createTeamMember = async (req, res) => {
             position,
             type,
             linkedIn: linkedIn || '',
-            email: email || '',
             bio: bio || '',
-            image: image || ''
+            image: req.file ? req.file.filename : ''
         });
 
         res.status(201).json({
@@ -91,7 +90,7 @@ export const createTeamMember = async (req, res) => {
 // @access  Private/Admin
 export const updateTeamMember = async (req, res) => {
     try {
-        const { name, position, type, linkedIn, email, bio, image } = req.body;
+        const { name, position, type, linkedIn, bio } = req.body;
 
         let teamMember = await TeamMember.findById(req.params.id);
 
@@ -100,19 +99,22 @@ export const updateTeamMember = async (req, res) => {
                 success: false,
                 message: 'Team member not found'
             });
+        }        const updateData = {
+            name,
+            position,
+            type,
+            linkedIn: linkedIn || '',
+            bio: bio || '',
+        };
+
+        // Only update image if a new one is uploaded
+        if (req.file) {
+            updateData.image = `/uploads/${req.file.filename}`;
         }
 
         teamMember = await TeamMember.findByIdAndUpdate(
             req.params.id,
-            {
-                name,
-                position,
-                type,
-                linkedIn,
-                email,
-                bio,
-                image
-            },
+            updateData,
             {
                 new: true,
                 runValidators: true

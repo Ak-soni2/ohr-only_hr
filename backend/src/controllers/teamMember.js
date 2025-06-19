@@ -3,7 +3,7 @@ import TeamMember from '../models/TeamMember.js';
 // Only for admin
 export const addTeamMember = async (req, res) => {
     try {
-        const { name, position, type, linkedIn, email, bio, image } = req.body;
+        const { name, position, type, linkedIn, email, bio } = req.body;
         
         const teamMember = new TeamMember({
             name,
@@ -12,7 +12,7 @@ export const addTeamMember = async (req, res) => {
             linkedIn,
             email,
             bio,
-            image
+            image: req.file ? `/uploads/${req.file.filename}` : undefined
         });
 
         await teamMember.save();
@@ -73,10 +73,13 @@ export const getTeamMember = async (req, res) => {
 };
 
 // Update team member
-export const updateTeamMember = async (req, res) => {
-    try {
+export const updateTeamMember = async (req, res) => {    try {
         const { id } = req.params;
-        const updates = req.body;
+        const updates = { ...req.body };
+        
+        if (req.file) {
+            updates.image = `/uploads/${req.file.filename}`;
+        }
 
         const teamMember = await TeamMember.findByIdAndUpdate(
             id,

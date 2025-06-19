@@ -5,6 +5,9 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import ensureUploadsDirectory from './utils/ensureUploads.js';
 
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
@@ -30,8 +33,33 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
     exposedHeaders: ['Set-Cookie']
 }));
-app.use(helmet());
+
+// Configure helmet with proper CSP for image uploads
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "https:"],
+        },
+    },
+}));
 app.use(morgan('dev'));
+
+// Ensure uploads directory exists
+ensureUploadsDirectory();
+
+// Serve static files from uploads directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsPath = path.join(__dirname, '../uploads');
+console.log('Serving uploads from:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath, {
+    setHeaders: (res) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
 
 // Rate limiting
 const limiter = rateLimit({
