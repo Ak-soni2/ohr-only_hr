@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import './Registration.js';  // Import Registration model to ensure it's loaded
 
 const agendaItemSchema = new mongoose.Schema({
     time: {
@@ -69,6 +70,23 @@ eventSchema.pre('save', function(next) {
     this.updatedAt = new Date();
     next();
 });
+
+eventSchema.virtual('registrationCount', {
+    ref: 'Registration',
+    localField: '_id',
+    foreignField: 'eventId',
+    count: true,
+    options: { lean: true }  // Add lean option for better performance
+});
+
+eventSchema.virtual('registrations', {
+    ref: 'Registration',
+    localField: '_id',
+    foreignField: 'eventId'
+});
+
+eventSchema.set('toJSON', { virtuals: true });
+eventSchema.set('toObject', { virtuals: true });
 
 const Event = mongoose.model('Event', eventSchema);
 

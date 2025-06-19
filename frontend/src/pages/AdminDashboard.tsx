@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { TeamMemberManagement } from '../components/TeamMemberManagement';
 import { ActivityManagement } from '../components/ActivityManagement';
+import { EventManagement } from '../components/EventManagement';
 import { useToast } from '../components/ui/use-toast';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -189,99 +190,7 @@ const AdminDashboard = () => {
             </TabsList>
 
             <TabsContent value="events">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card className="border-green-300">
-                  <CardHeader>
-                    <CardTitle>{selectedEvent ? 'Edit Event' : 'Create New Event'}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Event Name</span>
-                        <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                      </label>
-                      <Select value={formData.type} onValueChange={(value: 'monthly' | 'foundation') => setFormData({ ...formData, type: value })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select event type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="monthly">Monthly Event</SelectItem>
-                          <SelectItem value="foundation">Foundation Event</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Speaker Name</span>
-                        <Input value={formData.speaker.name} onChange={(e) => setFormData({ ...formData, speaker: { ...formData.speaker, name: e.target.value } })} required />
-                      </label>
-                      <Textarea value={formData.speaker.bio} onChange={(e) => setFormData({ ...formData, speaker: { ...formData.speaker, bio: e.target.value } })} required placeholder="Speaker Bio" />
-                      <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
-                      <Input type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} required />
-                      <Input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required placeholder="Location" />
-                      <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required placeholder="Description" />
-
-                      {formData.agenda.map((item, index) => (
-                        <div key={index} className="flex gap-2 items-center">
-                          <Input type="time" value={item.time} onChange={(e) => {
-                            const newAgenda = [...formData.agenda];
-                            newAgenda[index].time = e.target.value;
-                            setFormData({ ...formData, agenda: newAgenda });
-                          }} required />
-                          <Input value={item.description} onChange={(e) => {
-                            const newAgenda = [...formData.agenda];
-                            newAgenda[index].description = e.target.value;
-                            setFormData({ ...formData, agenda: newAgenda });
-                          }} placeholder="Agenda description" required />
-                          {formData.agenda.length > 1 && (
-                            <Button type="button" variant="destructive" size="sm" onClick={() => removeAgendaItem(index)}>
-                              <X size={16} />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-
-                      <Button type="button" variant="outline" className="mt-2" onClick={addAgendaItem}>
-                        <Plus size={16} className="mr-1" /> Add Agenda
-                      </Button>
-
-                      <div className="flex gap-3 mt-4">
-                        <Button type="submit" className="bg-green-500 hover:bg-green-600 text-white" disabled={isLoading}>
-                          <Save size={16} className="mr-1" /> {isLoading ? 'Saving...' : selectedEvent ? 'Update Event' : 'Create Event'}
-                        </Button>
-                        {selectedEvent && (
-                          <Button type="button" variant="outline" onClick={resetForm}>
-                            Cancel
-                          </Button>
-                        )}
-                      </div>
-                    </form>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-green-300">
-                  <CardHeader>
-                    <CardTitle>Existing Events</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {events.map((event) => (
-                        <Card key={event._id} className="p-4 border border-green-200">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-semibold text-green-700">{event.name}</h3>
-                              <p className="text-sm text-muted-foreground">{new Date(event.date).toLocaleDateString()} at {event.time}</p>
-                              <p className="text-sm text-muted-foreground">{event.location}</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>Edit</Button>
-                              <Button variant="destructive" size="sm" onClick={() => handleDelete(event._id)}>Delete</Button>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <EventManagement />
             </TabsContent>
 
             <TabsContent value="team">

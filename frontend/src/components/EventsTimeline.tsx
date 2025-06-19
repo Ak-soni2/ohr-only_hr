@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight, Users } from 'lucide-react';
+import { format } from 'date-fns';
+import { getImageUrl } from '../utils/image';
 
 interface Event {
   _id: string;
@@ -15,7 +17,7 @@ interface Event {
   location: string;
   description: string;
   image?: string;
-  attendees?: number;
+  registrationCount?: number;
 }
 
 export const EventsTimeline: React.FC = () => {
@@ -34,8 +36,8 @@ export const EventsTimeline: React.FC = () => {
       const data = await response.json();
       if (response.ok) {
         const sortedEvents = data.data.sort((a: Event, b: Event) => {
-          const dateA = parseInt(a._id.substring(0, 8), 16);
-          const dateB = parseInt(b._id.substring(0, 8), 16);
+          const dateA = new Date(a.date).getTime();
+          const dateB = new Date(b.date).getTime();
           return dateB - dateA;  // Latest first
         });
         setEvents(sortedEvents);
@@ -64,7 +66,6 @@ export const EventsTimeline: React.FC = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-background to-accent/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-primary bg-clip-text text-transparent">
             Our Events
@@ -102,68 +103,87 @@ export const EventsTimeline: React.FC = () => {
             {filteredEvents.slice(0, visibleCount).map((event, index) => (
               <div
                 key={event._id}
-                className={`relative flex items-center ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+                className={`flex flex-col md:flex-row gap-8 items-center md:items-start ${
+                  index % 2 === 0 ? 'md:flex-row-reverse' : ''
+                }`}
               >
-                <div className="absolute left-2 md:left-1/2 md:transform md:-translate-x-1/2 w-4 h-4 bg-gradient-to-r from-primary to-purple-600 rounded-full border-4 border-background z-10" />
-
-                <div className={`w-full md:w-5/12 ml-12 md:ml-0 ${index % 2 === 0 ? 'md:mr-auto md:pr-8' : 'md:ml-auto md:pl-8'}`}>
-                  <div className="group bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-border">
-                    <div className="relative overflow-hidden">
+                <div className="w-full md:w-1/2 flex justify-center">
+                  <div className="relative w-full max-w-md">
+                    <div className="aspect-video rounded-xl overflow-hidden border-2 border-primary/20 shadow-xl">
                       <img
-                        src={event.image || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=500&fit=crop'}
+                        src={getImageUrl(event.image) || '/placeholder.svg'}
                         alt={event.name}
-                        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
                       />
-                      <div className="absolute top-4 right-4">
-                        <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
-                          {event.type === 'monthly' ? 'Monthly' : 'Foundation Day'}
-                        </span>
-                      </div>
                     </div>
+                  </div>
+                </div>
 
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2 text-card-foreground group-hover:text-primary transition-colors">
-                        {event.name}
-                      </h3>
-                      <p className="text-muted-foreground mb-4">Speaker: {event.speaker.name}</p>
-                      <p className="text-sm text-muted-foreground mb-4">{event.speaker.bio}</p>
+                <div className="w-full md:w-1/2 bg-card p-6 rounded-xl border shadow-lg relative">
+                  <div className="absolute top-6 -left-3 md:left-auto md:right-auto md:top-auto w-6 h-6 rounded-full bg-primary" />
+                  
+                  <Link 
+                    to={`/events/${event._id}`}
+                    className="block hover:no-underline"
+                  >
+                    <h3 className="text-2xl font-bold mb-3 hover:text-primary transition-colors">
+                      {event.name}
+                    </h3>
+                  </Link>
 
-                      <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Calendar size={16} className="mr-2 text-primary" />
-                          {new Date(event.date).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Clock size={16} className="mr-2 text-primary" />
-                          {event.time}
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <MapPin size={16} className="mr-2 text-primary" />
-                          {event.location}
-                        </div>
-                      </div>
+                  <p className="text-muted-foreground mb-4 line-clamp-3">
+                    {event.description}
+                  </p>
 
-                      <Link
-                        to={`/events/${event._id}`}
-                        className="inline-flex items-center bg-secondary text-white px-6 py-2 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                      >
-                        View Details
-                        <ArrowRight size={16} className="ml-2" />
-                      </Link>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {format(new Date(event.date), 'MMMM d, yyyy')}
                     </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <Clock className="w-4 h-4 mr-2" />
+                      {event.time}
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {event.location}
+                    </div>
+                    {typeof event.registrationCount === 'number' && (
+                      <div className="flex items-center text-muted-foreground">
+                        <Users className="w-4 h-4 mr-2" />
+                        {event.registrationCount} {event.registrationCount === 1 ? 'person' : 'people'} registered
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Speaker</p>
+                      <p className="text-sm text-muted-foreground">{event.speaker.name}</p>
+                    </div>
+                    <Link
+                      to={`/events/${event._id}`}
+                      className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
               </div>
             ))}
-          </div >
+          </div>
 
           {visibleCount < filteredEvents.length && (
             <div className="flex justify-center mt-14">
               <button
                 onClick={handleLoadMore}
-                className="bg-primary text-white px-8 py-3 rounded-full font-semibold shadow-md hover:shadow-lg transition-transform hover:scale-105"
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-colors"
               >
-                View More Events
+                Load More
               </button>
             </div>
           )}

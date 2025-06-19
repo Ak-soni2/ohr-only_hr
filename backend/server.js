@@ -14,7 +14,13 @@ const port = 8080;
 
 // Middleware
 // Configure CORS
-app.use(cors());  // Allow all origins for development
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8081', 'http://127.0.0.1:8081'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
+  exposedHeaders: ['Set-Cookie']
+}));
 
 // Parse JSON bodies
 app.use(express.json());
@@ -22,23 +28,48 @@ app.use(express.json());
 // Ensure uploads directory exists
 ensureUploadsDirectory();
 
+// Set security headers for all responses
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
+// Routes
+import authRoutes from './src/routes/auth.js';
+import eventRoutes from './src/routes/events.js';
+import teamRoutes from './src/routes/team.js';
+import activityRoutes from './src/routes/activities.js';
+import registrationRoutes from './src/routes/registration.js';
+
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/team", teamRoutes);
+app.use("/api/activities", activityRoutes);
+app.use("/api/registrations", registrationRoutes);
+
 // Serve static files from uploads directory
-app.use('/uploads', express.static('uploads', {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configure static file serving for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   }
 }));
 
-// Set security headers for all responses
-app.use((req, res, next) => {
-  // Only set Content-Type: application/json for API routes
-  if (req.path.startsWith('/api/')) {
-    res.setHeader('Content-Type', 'application/json');
-  }
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  next();
+app.get("/", (req, res) => {
+  res.send("OnlyHR API is running");
 });
 
 // Error handler middleware
@@ -52,34 +83,6 @@ mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log("MongoDB Connection Error:", err));
-
-// Routes
-app.use("/api/auth", require("./src/routes/auth"));
-app.use("/api/events", require("./src/routes/events"));
-app.use("/api/team", require("./src/routes/team.js"));
-app.use("/api/activities", require("./src/routes/activities"));
-
-app.get("/", (req, res) => {
-  res.send("OnlyHR API is running");
-});
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Ensure uploads directory exists with proper permissions
-ensureUploadsDirectory();
-
-// Configure static file serving for uploads
-app.use('/uploads', (req, res, next) => {
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  next();
-}, express.static(path.join(__dirname, 'uploads'), {
-  setHeaders: (res, path) => {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-}));
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

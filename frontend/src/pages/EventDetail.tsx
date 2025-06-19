@@ -1,6 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Star } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, ArrowLeft, Star, Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { getImageUrl } from '../utils/image';
+import { Button } from '../components/ui/button';
+import { useToast } from '../hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../components/ui/form";
+import { Input } from "../components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 interface Speaker {
   name: string;
@@ -33,13 +57,35 @@ interface ApiResponse {
   data: Event;
 }
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=500&fit=crop';
+const registrationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
+  companyName: z.string().min(2, "Company name must be at least 2 characters"),
+  designation: z.string().min(2, "Designation must be at least 2 characters"),
+  phoneNumber: z.string().regex(/^\+?[\d\s-]{8,}$/, "Please enter a valid phone number")
+});
+
+type RegistrationFormData = z.infer<typeof registrationSchema>;
 
 export const EventDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<RegistrationFormData>({
+    resolver: zodResolver(registrationSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      companyName: "",
+      designation: "",
+      phoneNumber: ""
+    }
+  });
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -63,6 +109,43 @@ export const EventDetail: React.FC = () => {
 
     fetchEvent();
   }, [id]);
+
+  const handleRegistration = async (data: RegistrationFormData) => {
+    if (!event?._id) return;
+    setIsRegistering(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/registrations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          eventId: event._id
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to register for the event');
+      }
+
+      toast({
+        title: "Success!",
+        description: "You have successfully registered for this event.",
+      });
+      setDialogOpen(false);
+      form.reset();
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err instanceof Error ? err.message : 'Failed to register for the event',
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,9 +177,13 @@ export const EventDetail: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-96 bg-gradient-to-r from-primary/20 to-purple-600/20 overflow-hidden">
         <img
-          src={event.image || DEFAULT_IMAGE}
+          src={getImageUrl(event.image)}
           alt={event.name}
           className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder.svg';
+          }}
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="text-center w-full">
@@ -123,72 +210,25 @@ export const EventDetail: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Event Info */}
               <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="text-primary" size={20} />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Date</p>
-                      <p className="font-semibold">{new Date(event.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="text-primary" size={20} />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Time</p>
-                      <p className="font-semibold">{event.time}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="text-primary" size={20} />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Location</p>
-                      <p className="font-semibold">{event.location}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Users className="text-primary" size={20} />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Type</p>
-                      <p className="font-semibold capitalize">{event.type}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t border-border pt-8">
-                  <h2 className="text-2xl font-bold mb-4 text-card-foreground">About This Event</h2>
-                  <div className="prose prose-slate max-w-none">
-                    {paragraphs.map((paragraph, index) => (
-                      <p key={index} className="text-muted-foreground mb-4 leading-relaxed">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                </div>
+                <h2 className="text-2xl font-semibold mb-6">Event Description</h2>
+                {paragraphs.map((paragraph, index) => (
+                  <p key={index} className="text-muted-foreground mb-4">
+                    {paragraph}
+                  </p>
+                ))}
               </div>
 
-              {/* Speaker Bio */}
-              <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
-                <h2 className="text-2xl font-bold mb-4 text-card-foreground">About the Speaker</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {event.speaker.bio}
-                </p>
-              </div>
-
-              {/* Agenda */}
               {event.agenda && event.agenda.length > 0 && (
                 <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
-                  <h2 className="text-2xl font-bold mb-6 text-card-foreground">Event Agenda</h2>
-                  <div className="space-y-4">
+                  <h2 className="text-2xl font-semibold mb-6">Event Agenda</h2>
+                  <div className="space-y-6">
                     {event.agenda.map((item) => (
-                      <div key={item._id} className="flex items-center space-x-4 p-4 bg-accent/50 rounded-lg">
-                        <div className="w-20 text-sm font-semibold text-primary">
-                          {item.time}
+                      <div key={item._id} className="flex gap-4">
+                        <div className="w-24 flex-shrink-0">
+                          <span className="text-primary font-medium">{item.time}</span>
                         </div>
-                        <div className="flex-1 text-muted-foreground">
-                          {item.description}
-                        </div>
+                        <p className="text-muted-foreground">{item.description}</p>
                       </div>
                     ))}
                   </div>
@@ -198,41 +238,122 @@ export const EventDetail: React.FC = () => {
 
             {/* Sidebar */}
             <div className="space-y-8">
-              {/* Registration Card */}
-              <div className="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-                <h3 className="text-2xl font-bold mb-4">Register Now</h3>
-                <p className="mb-6 opacity-90">
-                  Secure your spot for this amazing event. Limited seats available!
-                </p>
-                <button className="w-full bg-white text-primary font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors">
-                  Register for Event
-                </button>
-                <p className="text-center mt-4 text-sm opacity-75">
-                  Free for OnlyHR members
-                </p>
+              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
+                <h3 className="text-lg font-semibold mb-4">Event Details</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center text-muted-foreground">
+                    <Calendar className="w-5 h-5 mr-3 text-primary" />
+                    <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock className="w-5 h-5 mr-3 text-primary" />
+                    <span>{event.time}</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <MapPin className="w-5 h-5 mr-3 text-primary" />
+                    <span>{event.location}</span>
+                  </div>
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full mt-4">Register Now</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Register for {event.name}</DialogTitle>
+                        <DialogDescription>
+                          Fill out the form below to register for this event.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleRegistration)} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="John Doe" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input type="email" placeholder="john@example.com" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="companyName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Company Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Company Ltd." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="designation"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Designation</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Software Engineer" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="+1234567890" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button type="submit" className="w-full" disabled={isRegistering}>
+                            {isRegistering ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Registering...
+                              </>
+                            ) : (
+                              'Register'
+                            )}
+                          </Button>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
 
-              {/* Event Highlights */}
               <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
-                <h3 className="text-xl font-bold mb-4 text-card-foreground">Event Highlights</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center space-x-2">
-                    <Star size={16} className="text-yellow-500" />
-                    <span className="text-sm text-muted-foreground">Expert speaker presentation</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Star size={16} className="text-yellow-500" />
-                    <span className="text-sm text-muted-foreground">Interactive Q&A session</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Star size={16} className="text-yellow-500" />
-                    <span className="text-sm text-muted-foreground">Networking opportunities</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Star size={16} className="text-yellow-500" />
-                    <span className="text-sm text-muted-foreground">Resource materials included</span>
-                  </li>
-                </ul>
+                <h3 className="text-lg font-semibold mb-4">About the Speaker</h3>
+                <div className="space-y-4">
+                  <h4 className="font-medium">{event.speaker.name}</h4>
+                  <p className="text-sm text-muted-foreground">{event.speaker.bio}</p>
+                </div>
               </div>
             </div>
           </div>
