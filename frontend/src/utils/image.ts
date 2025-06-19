@@ -1,7 +1,7 @@
 // Helper function to get the full URL for uploaded images
 export const getImageUrl = (imagePath: string | null | undefined): string => {
   if (!imagePath) {
-    return '';
+    return '/placeholder.svg'; // Return a placeholder image if no image path is provided
   }
 
   // If it's already a full URL, return as is
@@ -9,8 +9,7 @@ export const getImageUrl = (imagePath: string | null | undefined): string => {
     return imagePath;
   }
 
-  // If it's a relative path, prepend the uploads URL
-  // Construct the full URL for the image
-  const baseUrl = import.meta.env.VITE_API_URL;
+  // If it's a relative path, prepend the API URL
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
   return `${baseUrl}/uploads/${imagePath}`;
 };

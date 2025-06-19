@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lightbulb, Heart, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
+import { getImageUrl } from '../utils/image';
 
 interface Activity {
   _id: string;
@@ -23,7 +24,8 @@ export const ActivitiesSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {    const fetchActivities = async () => {
+  useEffect(() => {
+    const fetchActivities = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -173,9 +175,13 @@ export const ActivitiesSection: React.FC = () => {
                       <div className="md:flex">
                         <div className="md:w-1/2">
                           <img
-                            src={item.image}
+                            src={getImageUrl(item.image)}
                             alt={item.title}
                             className="w-full h-64 md:h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder.svg';
+                            }}
                           />
                         </div>
                         <div className="md:w-1/2 p-8 flex flex-col justify-center">

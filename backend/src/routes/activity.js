@@ -1,5 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
+import upload from '../middleware/uploadMiddleware.js';
 import {
     getAllActivities,
     getActivity,
@@ -18,8 +19,8 @@ router.get('/:id', getActivity);
 
 // Protected routes (admin only)
 router.use(protect);
-router.post('/', createActivity);
-router.put('/:id', updateActivity);
+router.post('/', upload.single('image'), createActivity);
+router.put('/:id', upload.single('image'), updateActivity);
 router.delete('/:id', deleteActivity);
 
 export default router;

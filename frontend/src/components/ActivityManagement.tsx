@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
+import { Button } from "./ui/button"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { useToast } from '../components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+} from "./ui/select"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
+import { Textarea } from "./ui/textarea"
+import { Badge } from "./ui/badge"
+import { Loader2 } from "lucide-react"
+import { useToast } from "../hooks/use-toast"
+import { getImageUrl } from '../utils/image';
 
 interface Activity {
   _id: string;
@@ -30,11 +39,12 @@ export function ActivityManagement() {
   const [loading, setLoading] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const { toast } = useToast();
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
     title: '',
-    type: 'lecture',
+    type: 'lecture' as const,
     description: '',
     image: '',
     date: '',
@@ -63,7 +73,9 @@ export function ActivityManagement() {
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Received non-JSON response from server");
-      }      const { success, data, message } = await response.json();
+      }
+
+      const { success, data, message } = await response.json();
       if (!success) {
         throw new Error(message || 'Failed to fetch activities');
       }
@@ -89,6 +101,12 @@ export function ActivityManagement() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
   const handleTypeChange = (value: string) => {
     setFormData(prev => ({ 
       ...prev, 
@@ -109,34 +127,42 @@ export function ActivityManagement() {
       const url = `http://localhost:8080/api/activities${selectedActivity ? `/${selectedActivity._id}` : ''}`;
       const method = selectedActivity ? 'PUT' : 'POST';
 
+      // Create FormData object
+      const form = new FormData();
+      // Add all form fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) form.append(key, value);
+      });
+      // Add image if selected
+      if (imageFile) {
+        form.append('image', imageFile);
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
-        body: JSON.stringify(formData)
+        body: form
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Received non-JSON response from server");
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to save activity');
       }
 
-      await response.json();
-      
       toast({
         title: "Success",
-        description: `Activity ${selectedActivity ? 'updated' : 'created'} successfully`,
+        description: result.message || `Activity ${selectedActivity ? 'updated' : 'created'} successfully`,
       });
 
-      // Reset form and refresh activities
+      // Reset form
       setFormData({
         title: '',
         type: 'lecture',
@@ -147,7 +173,10 @@ export function ActivityManagement() {
         position: '',
         impact: ''
       });
+      setImageFile(null);
       setSelectedActivity(null);
+
+      // Refresh activities list
       fetchActivities();
     } catch (error) {
       console.error('Submit error:', error);
@@ -219,120 +248,134 @@ export function ActivityManagement() {
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>{selectedActivity ? 'Edit Activity' : 'Add New Activity'}</CardTitle>
+          <CardTitle>{selectedActivity ? 'Edit Activity' : 'Create New Activity'}</CardTitle>
         </CardHeader>
-        <CardContent>          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
                 <Input
+                  id="title"
                   name="title"
-                  placeholder="Activity Title"
                   value={formData.title}
                   onChange={handleInputChange}
                   required
                 />
-
+              </div>
+              <div className="space-y-2">
+                <Label>Type</Label>
                 <Select value={formData.type} onValueChange={handleTypeChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select Activity Type" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="lecture">Guest Lecture</SelectItem>
-                    <SelectItem value="csr">CSR Activity</SelectItem>
+                    <SelectItem value="lecture">Lecture</SelectItem>
+                    <SelectItem value="csr">CSR</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              <Textarea
-                name="description"
-                placeholder="Activity Description (max 50 words)"
-                value={formData.description}
-                onChange={handleInputChange}
-                className="min-h-[100px]"
-                required
-                maxLength={300}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
                 <Input
-                  name="image"
-                  placeholder="Image URL"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  required
-                  type="url"
-                />
-
-                <Input
+                  id="date"
                   name="date"
                   type="date"
                   value={formData.date}
                   onChange={handleInputChange}
                   required
                 />
-
-                {formData.type === 'lecture' ? (
-                  <>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image">Image</Label>
+                <Input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="cursor-pointer"
+                  required={!selectedActivity}
+                />
+              </div>
+              {formData.type === 'lecture' ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="speaker">Speaker</Label>
                     <Input
+                      id="speaker"
                       name="speaker"
-                      placeholder="Speaker Name"
                       value={formData.speaker}
                       onChange={handleInputChange}
                       required
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="position">Position</Label>
                     <Input
+                      id="position"
                       name="position"
-                      placeholder="Speaker Position"
                       value={formData.position}
                       onChange={handleInputChange}
                       required
                     />
-                  </>
-                ) : (
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="impact">Impact</Label>
                   <Input
+                    id="impact"
                     name="impact"
-                    placeholder="Number of people impacted"
                     value={formData.impact}
                     onChange={handleInputChange}
                     required
-                    type="number"
-                    min="0"
-                    step="1"
                   />
-                )}
-              </div>              <div className="flex justify-end space-x-2">
-                {selectedActivity && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedActivity(null);
-                      setFormData({
-                        title: '',
-                        type: 'lecture',
-                        description: '',
-                        image: '',
-                        date: '',
-                        speaker: '',
-                        position: '',
-                        impact: ''
-                      });
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                )}
-                <Button type="submit" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {selectedActivity ? 'Updating...' : 'Creating...'}
-                    </>
-                  ) : (
-                    <>{selectedActivity ? 'Update Activity' : 'Create Activity'}</>
-                  )}
-                </Button>
+                </div>
+              )}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                />
               </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              {selectedActivity && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedActivity(null);
+                    setFormData({
+                      title: '',
+                      type: 'lecture',
+                      description: '',
+                      image: '',
+                      date: '',
+                      speaker: '',
+                      position: '',
+                      impact: ''
+                    });
+                    setImageFile(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : selectedActivity ? (
+                  'Update Activity'
+                ) : (
+                  'Create Activity'
+                )}
+              </Button>
             </div>
           </form>
         </CardContent>
@@ -340,35 +383,43 @@ export function ActivityManagement() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Activities</CardTitle>
+          <CardTitle>Activities List</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activities.map(activity => (
-              <Card key={activity._id}>
-                <CardContent className="p-4">
-                  {activity.image && (
-                    <img
-                      src={activity.image}
-                      alt={activity.title}
-                      className="w-full h-48 object-cover rounded-lg mb-4"
-                    />
-                  )}
-                  <h3 className="font-semibold text-lg">{activity.title}</h3>
-                  <p className="text-primary font-medium">{activity.type === 'lecture' ? 'Guest Lecture' : 'CSR Activity'}</p>
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{activity.description}</p>
-                  {activity.type === 'lecture' && activity.speaker && (
-                    <div className="mt-2">
-                      <p className="text-sm font-medium">Speaker: {activity.speaker}</p>
-                      <p className="text-sm text-muted-foreground">{activity.position}</p>
+          {loading ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : activities.length === 0 ? (
+            <p className="text-center text-muted-foreground">No activities found</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activities.map((activity) => (
+                <Card key={activity._id}>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{activity.title}</CardTitle>
+                    <Badge>{activity.type}</Badge>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="aspect-video relative overflow-hidden rounded-md">
+                      <img
+                        src={getImageUrl(activity.image)}
+                        alt={activity.title}
+                        className="object-cover w-full h-full"
+                      />
                     </div>
-                  )}                  {activity.type === 'csr' && activity.impact && (
-                    <p className="text-sm font-medium mt-2">Impact: {activity.impact} people</p>
-                  )}
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Date: {new Date(activity.date).toLocaleDateString()}
-                  </p>
-                  <div className="mt-4 space-x-2">
+                    <p className="text-sm text-muted-foreground">{activity.description}</p>
+                    <p className="text-sm">Date: {activity.date}</p>
+                    {activity.type === 'lecture' ? (
+                      <>
+                        <p className="text-sm">Speaker: {activity.speaker}</p>
+                        <p className="text-sm">Position: {activity.position}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm">Impact: {activity.impact}</p>
+                    )}
+                  </CardContent>
+                  <CardFooter className="flex justify-end space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -383,11 +434,11 @@ export function ActivityManagement() {
                     >
                       Delete
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
