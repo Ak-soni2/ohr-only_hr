@@ -24,7 +24,7 @@ export const TeamSection: React.FC = () => {
 
   const fetchTeamMembers = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/team');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/team`);
       const data = await response.json();
       if (data.success) {
         setTeamMembers(data.data);

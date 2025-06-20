@@ -43,7 +43,7 @@ export const TeamManagement: React.FC = () => {
 
   const fetchMembers = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/team');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/team`);
       const data = await response.json();
       if (data.success) {
         setMembers(data.data);
@@ -95,8 +95,8 @@ export const TeamManagement: React.FC = () => {
       }
 
       const url = selectedMember
-        ? `http://localhost:8080/api/team/${selectedMember._id}`
-        : 'http://localhost:8080/api/team';
+        ? `${import.meta.env.VITE_API_URL}/api/team/${selectedMember._id}`
+        : `${import.meta.env.VITE_API_URL}/api/team`;
 
       const token = localStorage.getItem('token');
       const response = await fetch(url, {
@@ -275,7 +275,7 @@ export const TeamManagement: React.FC = () => {
               <div className="flex items-center space-x-4">
                 {member.image && (
                   <img
-                    src={`http://localhost:8080${member.image}`}
+                    src={`${import.meta.env.VITE_API_URL}${member.image}`}
                     alt={member.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />

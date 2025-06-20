@@ -57,7 +57,7 @@ export function ActivityManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:8080/api/activities', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export function ActivityManagement() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const url = `http://localhost:8080/api/activities${selectedActivity ? `/${selectedActivity._id}` : ''}`;
+      const url = `${import.meta.env.VITE_API_URL}/api/activities${selectedActivity ? `/${selectedActivity._id}` : ''}`;
       const method = selectedActivity ? 'PUT' : 'POST';
 
       // Create FormData object
@@ -212,7 +212,7 @@ export function ActivityManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:8080/api/activities/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${id}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',

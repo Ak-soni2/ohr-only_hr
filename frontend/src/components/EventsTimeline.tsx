@@ -32,7 +32,7 @@ export const EventsTimeline: React.FC = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/events');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events`);
       const data = await response.json();
       if (response.ok) {
         const sortedEvents = data.data.sort((a: Event, b: Event) => {

@@ -63,7 +63,7 @@ const AdminDashboard = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/events');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events`);
       const data = await response.json();
       if (response.ok) setEvents(data.data);
     } catch (error) {
@@ -77,7 +77,7 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const url = selectedEvent ? `http://localhost:8080/api/events/${selectedEvent._id}` : 'http://localhost:8080/api/events';
+      const url = selectedEvent ? `${import.meta.env.VITE_API_URL}/api/events/${selectedEvent._id}` : `${import.meta.env.VITE_API_URL}/api/events`;
       const method = selectedEvent ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -107,7 +107,7 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:8080/api/events/${eventId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${eventId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

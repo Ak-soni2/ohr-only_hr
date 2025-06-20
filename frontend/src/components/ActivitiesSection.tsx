@@ -30,8 +30,8 @@ export const ActivitiesSection: React.FC = () => {
         setLoading(true);
         setError(null);
         console.log('Fetching activities...');
-        
-        const response = await fetch('http://localhost:8080/api/activities', {
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities`, {
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'

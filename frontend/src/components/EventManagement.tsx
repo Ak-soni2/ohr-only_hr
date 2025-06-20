@@ -69,7 +69,7 @@ export function EventManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:8080/api/events', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -163,7 +163,7 @@ export function EventManagement() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const url = `http://localhost:8080/api/events${selectedEvent ? `/${selectedEvent._id}` : ''}`;
+      const url = `${import.meta.env.VITE_API_URL}/api/events${selectedEvent ? `/${selectedEvent._id}` : ''}`;
       const method = selectedEvent ? 'PUT' : 'POST';
 
       // Create FormData object
@@ -270,7 +270,7 @@ export function EventManagement() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:8080/api/events/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
