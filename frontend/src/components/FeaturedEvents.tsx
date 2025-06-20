@@ -1,41 +1,48 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight, Loader2 } from 'lucide-react';
+import { getImageUrl } from '../utils/image';
+
+interface Event {
+  _id: string;
+  name: string;
+  type: string;
+  speaker: {
+    name: string;
+    bio: string;
+  };
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  image?: string;
+}
 
 export const FeaturedEvents: React.FC = () => {
-  const events = [
-    {
-      id: 1,
-      title: 'Future of Remote Work',
-      speaker: 'Dr. Sarah Johnson',
-      date: '2024-07-15',
-      time: '2:00 PM - 4:00 PM',
-      venue: 'Virtual Event',
-      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&h=300&fit=crop',
-      category: 'Monthly Event',
-    },
-    {
-      id: 2,
-      title: 'HR Analytics & Data Science',
-      speaker: 'Michael Chen',
-      date: '2024-07-22',
-      time: '10:00 AM - 12:00 PM',
-      venue: 'New York Conference Center',
-      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&h=300&fit=crop',
-      category: 'Workshop',
-    },
-    {
-      id: 3,
-      title: 'Foundation Day Celebration',
-      speaker: 'Leadership Team',
-      date: '2024-08-01',
-      time: '6:00 PM - 10:00 PM',
-      venue: 'Grand Ballroom',
-      image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=300&fit=crop',
-      category: 'Foundation Day',
-    },
-  ];
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events?type=monthly`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        setEvents(data.data.slice(0, 3));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch events');
+        console.error('Error fetching events:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   return (
     <section className="py-20 bg-background">
@@ -45,58 +52,74 @@ export const FeaturedEvents: React.FC = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Join our upcoming events and connect with fellow HR professionals.
           </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="group bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-border"
-            >
-              <div className="relative overflow-hidden">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {event.category}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2 text-card-foreground group-hover:text-primary transition-colors">
-                  {event.title}
-                </h3>
-                <p className="text-muted-foreground mb-4">Speaker: {event.speaker}</p>
-
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar size={16} className="mr-2 text-primary" />
-                    {new Date(event.date).toLocaleDateString()}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock size={16} className="mr-2 text-primary" />
-                    {event.time}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin size={16} className="mr-2 text-primary" />
-                    {event.venue}
-                  </div>
-                </div>
-
-                <Link
-                  to={`/events/${event.id}`}
-                  className="inline-flex items-center text-primary font-semibold hover:text-primary/80 transition-colors group/link"
-                >
-                  Learn More
-                  <ArrowRight size={16} className="ml-1 group-hover/link:translate-x-1 transition-transform" />
-                </Link>
-              </div>
+        </div>        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {loading ? (
+            <div className="col-span-3 flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ))}
+          ) : error ? (
+            <div className="col-span-3 text-center py-12 text-red-500">
+              {error}
+            </div>
+          ) : events.length === 0 ? (
+            <div className="col-span-3 text-center py-12 text-muted-foreground">
+              No upcoming events found.
+            </div>
+          ) : (
+            events.map((event) => (
+              <div
+                key={event._id}
+                className="group bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-border"
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={getImageUrl(event.image) || '/placeholder.svg'}
+                    alt={event.name}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+                      {event.type.charAt(0).toUpperCase() + event.type.slice(1)} Event
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-2 text-card-foreground group-hover:text-primary transition-colors">
+                    {event.name}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">Speaker: {event.speaker.name}</p>
+
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar size={16} className="mr-2 text-primary" />
+                      {new Date(event.date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock size={16} className="mr-2 text-primary" />
+                      {event.time}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin size={16} className="mr-2 text-primary" />
+                      {event.location}
+                    </div>
+                  </div>
+
+                  <Link
+                    to={`/events/${event._id}`}
+                    className="inline-flex items-center text-primary font-semibold hover:text-primary/80 transition-colors group/link"
+                  >
+                    Learn More
+                    <ArrowRight size={16} className="ml-1 group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         <div className="text-center mt-12">

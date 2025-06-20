@@ -4,7 +4,7 @@ import './Registration.js';  // Import Registration model to ensure it's loaded
 const agendaItemSchema = new mongoose.Schema({
     time: {
         type: String,
-        required: true
+        // required: true
     },
     description: {
         type: String,
@@ -31,7 +31,7 @@ const eventSchema = new mongoose.Schema({
         },
         bio: {
             type: String,
-            required: true
+            // required: true
         }
     },
     date: {
@@ -40,7 +40,7 @@ const eventSchema = new mongoose.Schema({
     },
     time: {
         type: String,
-        required: true
+        // required: true
     },
     location: {
         type: String,

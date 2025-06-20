@@ -48,7 +48,7 @@ export const ContactForm: React.FC = () => {
           {/* Contact Form */}
           <div className="bg-card rounded-2xl p-8 shadow-xl border border-border">
             <h2 className="text-2xl font-bold mb-6 text-card-foreground">Send us a Message</h2>
-            
+
             {isSubmitted && (
               <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
                 <p className="text-green-700 dark:text-green-300 font-medium">
@@ -138,7 +138,7 @@ export const ContactForm: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-card-foreground">Email</h3>
-                    <p className="text-muted-foreground">info@onlyhr.com</p>
+                    <p className="text-muted-foreground">info@onlyhr.org</p>
                   </div>
                 </div>
 
@@ -148,7 +148,9 @@ export const ContactForm: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-card-foreground">Phone</h3>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                    <p className="text-muted-foreground"> •	JITENDRA PENDSE - 9049995970 </p>
+                    <p className="text-muted-foreground"> •	PRASHANT ITHAPE - 9657002289 </p>
+                    <p className="text-muted-foreground"> •	PRADEEP TUPE - 9158988263  </p>
                   </div>
                 </div>
 
@@ -158,7 +160,9 @@ export const ContactForm: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-card-foreground">Address</h3>
-                    <p className="text-muted-foreground">123 Business Ave<br />New York, NY 10001</p>
+                    <p className="text-muted-foreground">Flat No. H2, Suyog Nagar,
+                      Off Senapati Bapat Raod,
+                      <br />Shivajinagar, Pune – 411016.</p>
                   </div>
                 </div>
               </div>

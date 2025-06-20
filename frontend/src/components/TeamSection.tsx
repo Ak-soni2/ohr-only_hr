@@ -52,6 +52,15 @@ export const TeamSection: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-primary bg-clip-text text-transparent">
+           About Us
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            OHR is primarily an informal Self Help Group of and for HR professionals including those in IR and allied professions as well as researchers who have passion to do better all the time.
+Indian industry has the capability and potential to make a huge contribution in building better India. OHR believes that now HR professionals need to be ready to help industry achieve this goal.
+          </p>  
+        </div>
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-primary bg-clip-text text-transparent">
             Meet Our Team
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
