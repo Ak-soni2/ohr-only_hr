@@ -1,6 +1,6 @@
 # OHR — Event Horizon (frontend)
 
-Live preview: https://lovable.dev/projects/e098cd65-7de1-4528-8cff-53e8e836f6f8
+Live preview: https://only-hr.vercel.app/
 
 A modern, componentized React frontend built with TypeScript, Vite, Tailwind CSS and shadcn-ui (Radix primitives). This repository contains the frontend for an event management / community site featuring events, teams, memberships and admin tools.
 
