@@ -1,73 +1,119 @@
-# Welcome to your Lovable project
+# OHR — Event Horizon (frontend)
 
-## Project info
+Live preview: https://lovable.dev/projects/e098cd65-7de1-4528-8cff-53e8e836f6f8
 
-**URL**: https://lovable.dev/projects/e098cd65-7de1-4528-8cff-53e8e836f6f8
+A modern, componentized React frontend built with TypeScript, Vite, Tailwind CSS and shadcn-ui (Radix primitives). This repository contains the frontend for an event management / community site featuring events, teams, memberships and admin tools.
 
-## How can I edit this code?
+## Key technologies
 
-There are several ways of editing your application.
+- React (TypeScript)
+- Vite (fast dev/build)
+- Tailwind CSS (+ tailwind-animate)
+- shadcn-ui + Radix UI primitives for accessible components
+- TanStack Query for client data fetching/caching
+- React Router for client routing
+- axios for HTTP requests
+- Zod + react-hook-form for validation and forms
 
-**Use Lovable**
+## Highlights (what makes this project interesting)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e098cd65-7de1-4528-8cff-53e8e836f6f8) and start prompting.
+- Fully componentized UI leveraging Radix primitives and shadcn-ui patterns for accessible, composable components.
+- Uses TanStack Query for robust client-side caching and background updates.
+- Modular folder structure: pages, components, ui primitives and hooks for easy maintenance and onboarding.
+- Tailwind + utility-first CSS makes styling consistent and fast to iterate.
 
-Changes made via Lovable will be committed automatically to this repo.
+## Resume-ready / ATS-friendly bullet points
 
-**Use your preferred IDE**
+Use these lines directly on your resume (ATS optimized — start with action verbs and include technologies):
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Implemented a responsive, accessible frontend using React, TypeScript, Vite, Tailwind CSS and shadcn-ui (Radix), enabling rapid UI development and consistent design.
+- Built modular UI components (events, teams, memberships, admin panels) using Radix primitives and Tailwind, improving reuse and maintainability.
+- Integrated client-side data fetching and caching with TanStack Query and axios to optimize network usage and UX.
+- Implemented form validation and schemas using react-hook-form and Zod to ensure strong input validation and developer ergonomics.
+- Configured Vite development pipeline and SWC-based React plugin for fast cold-start and incremental builds.
+- Designed and documented component APIs and folder structure to accelerate onboarding and cross-functional collaboration.
+- Incorporated Tailwind CSS utility patterns and animations to produce performant, responsive UIs across devices.
+- Used TypeScript types and linting to reduce runtime errors and improve developer experience.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Tip: Pick 3–5 bullets that are most relevant to the job you’re applying for and include them under the relevant project experience entry on your resume.
 
-Follow these steps:
+## Project structure (key paths)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- `src/` — application source
+	- `components/` — page-level and feature components (Events, Activities, Team, Admin)
+	- `components/ui/` — shadcn-style primitive components and wrappers
+	- `pages/` — route pages (Home, Events, Admin, Contact, etc.)
+	- `hooks/` — custom hooks (use-mobile, use-toast)
+	- `lib/`, `utils/` — utility helpers
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Setup (local development)
 
-# Step 3: Install the necessary dependencies.
-npm i
+Requirements: Node.js (16+ recommended) and npm.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Start development server
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+This runs Vite's dev server. Open http://localhost:5173 (or the port Vite reports).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Build for production
 
-**Use GitHub Codespaces**
+```bash
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+4. Preview production build locally
 
-## What technologies are used for this project?
+```bash
+npm run preview
+```
 
-This project is built with:
+## Scripts (from package.json)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- `dev` — start Vite dev server
+- `build` — build production bundle with Vite
+- `build:dev` — build using development mode
+- `preview` — preview the production build locally
+- `lint` — run ESLint
 
-## How can I deploy this project?
+## Notes on running & environment
 
-Simply open [Lovable](https://lovable.dev/projects/e098cd65-7de1-4528-8cff-53e8e836f6f8) and click on Share -> Publish.
+- No runtime server is included in this repo — this is a static single-page app suitable for static hosting services (Vercel, Netlify) or an S3+CDN approach.
+- API endpoints (if any) are expected to be provided by a backend service. Inspect `src/lib` or `src/utils` for axios calls or environment variable usage.
 
-## Can I connect a custom domain to my Lovable project?
+## Contributing
 
-Yes, you can!
+If you want to contribute:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Make changes and run `npm install` if you add deps
+4. Run `npm run dev` and verify locally
+5. Commit and open a pull request
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Verification checklist (quick)
+
+- Install deps: `npm install`
+- Start dev server: `npm run dev` — verify app loads and routes work
+- Run lint: `npm run lint`
+
+## License
+
+This project does not include a license file. Add a `LICENSE` file if you plan to publish this repository.
+
+---
+
+If you'd like, I can also:
+
+- extract a short (3–5) resume-ready paragraph tailored to a specific job posting
+- add a `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`
+
+Contact: see repository owner / Git history for author details.
