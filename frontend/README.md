@@ -108,12 +108,3 @@ If you want to contribute:
 ## License
 
 This project does not include a license file. Add a `LICENSE` file if you plan to publish this repository.
-
----
-
-If you'd like, I can also:
-
-- extract a short (3–5) resume-ready paragraph tailored to a specific job posting
-- add a `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`
-
-Contact: see repository owner / Git history for author details.
